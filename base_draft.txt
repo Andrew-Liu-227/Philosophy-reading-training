@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Philosophy Quiz</title>
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #f5f5f5;
+        color: #333;
+      }
+      .quiz-container {
+        background-color: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      }
+      h1 {
+        color: #2c3e50;
+        text-align: center;
+      }
+      .question {
+        font-size: 1.2rem;
+        margin-bottom: 20px;
+        font-weight: bold;
+      }
+      .options {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-bottom: 20px;
+      }
+      .option {
+        padding: 10px 15px;
+        background-color: #f0f0f0;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+      }
+      .option:hover {
+        background-color: #e0e0e0;
+      }
+      .selected {
+        background-color: #3498db;
+        color: white;
+        border-color: #2980b9;
+      }
+      button {
+        padding: 10px 15px;
+        background-color: #2c3e50;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 1rem;
+        transition: background-color 0.2s;
+      }
+      button:hover {
+        background-color: #1a252f;
+      }
+      button:disabled {
+        background-color: #95a5a6;
+        cursor: not-allowed;
+      }
+      .feedback {
+        margin-top: 15px;
+        padding: 15px;
+        border-radius: 5px;
+        display: none;
+      }
+      .correct {
+        background-color: #d4edda;
+        color: #155724;
+      }
+      .incorrect {
+        background-color: #f8d7da;
+        color: #721c24;
+      }
+      .controls {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 20px;
+      }
+      .streak-container {
+        text-align: center;
+        margin-bottom: 20px;
+        font-weight: bold;
+        color: #2c3e50;
+        font-size: 1.2rem;
+      }
+      .explanation {
+        margin-top: 15px;
+        padding: 15px;
+        background-color: #e8f4f8;
+        border-radius: 5px;
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="quiz-container">
+      <h1>Philosophy Quiz</h1>
+      <div class="streak-container">
+        Current Streak: <span id="streak-counter">0</span>
+      </div>
+      <div id="question" class="question"></div>
+      <div id="options" class="options"></div>
+      <div id="feedback" class="feedback"></div>
+      <div id="explanation" class="explanation"></div>
+      <div class="controls">
+        <button id="next-btn" disabled>Next Question</button>
+      </div>
+    </div>
+
+    <script>
+      // Question bank
+      const questions = [
+        {
+          question: "Who wrote 'The Republic'?",
+          options: ["Aristotle", "Plato", "Socrates", "Kant"],
+          correctIndex: 1,
+          explanation:
+            "Plato wrote 'The Republic', which is a Socratic dialogue concerning justice, the order and character of the just city-state, and the just man.",
+        },
+        {
+          question:
+            "Which philosophical concept is associated with Jean-Paul Sartre?",
+          options: [
+            "Categorical Imperative",
+            "Existentialism",
+            "Utilitarianism",
+            "Empiricism",
+          ],
+          correctIndex: 1,
+          explanation:
+            "Jean-Paul Sartre is a key figure in Existentialism, which emphasizes individual existence, freedom, and choice.",
+        },
+        {
+          question:
+            "The statement 'I think, therefore I am' (Cogito, ergo sum) was made by:",
+          options: [
+            "René Descartes",
+            "David Hume",
+            "John Locke",
+            "Friedrich Nietzsche",
+          ],
+          correctIndex: 0,
+          explanation:
+            "René Descartes made this statement in his 'Discourse on the Method' (1637). It forms the foundation of Cartesian doubt, establishing the certainty of one's own existence.",
+        },
+        {
+          question: "What is the 'Categorical Imperative'?",
+          options: [
+            "A concept from utilitarianism",
+            "A principle in Kant's ethics",
+            "A Nietzschean theory",
+            "A form of relativism",
+          ],
+          correctIndex: 1,
+          explanation:
+            "The Categorical Imperative is the central philosophical concept in Immanuel Kant's deontological moral philosophy, which acts as an unconditional moral obligation.",
+        },
+        {
+          question:
+            "The 'Allegory of the Cave' appears in which philosophical work?",
+          options: [
+            "Aristotle's Nicomachean Ethics",
+            "Plato's Republic",
+            "Kant's Critique of Pure Reason",
+            "Hume's Treatise of Human Nature",
+          ],
+          correctIndex: 1,
+          explanation:
+            "The 'Allegory of the Cave' appears in Plato's Republic (Book VII) and illustrates the effect of education on the human soul.",
+        },
+        {
+          question: "What is the main principle of utilitarianism?",
+          options: [
+            "Following God's commands",
+            "Acting according to universal law",
+            "Maximizing pleasure and minimizing pain",
+            "Living according to nature",
+          ],
+          correctIndex: 2,
+          explanation:
+            "Utilitarianism, associated with Jeremy Bentham and John Stuart Mill, proposes that the best action is the one that maximizes utility, defined as that which produces the greatest well-being for the greatest number of people.",
+        },
+        {
+          question: "Who is known for the concept of 'the will to power'?",
+          options: [
+            "Friedrich Nietzsche",
+            "John Stuart Mill",
+            "Karl Marx",
+            "Immanuel Kant",
+          ],
+          correctIndex: 0,
+          explanation:
+            "Friedrich Nietzsche developed the concept of 'the will to power' as a psychological explanation of human behavior as driven by the desire to dominate and control.",
+        },
+        {
+          question:
+            "The philosophical position that denies the existence of God is called:",
+          options: ["Agnosticism", "Atheism", "Pantheism", "Deism"],
+          correctIndex: 1,
+          explanation:
+            "Atheism is the philosophical position that rejects belief in the existence of deities. Agnosticism is the view that the existence of God is unknown or unknowable.",
+        },
+        {
+          question:
+            "Which philosopher is associated with the concept of the 'social contract'?",
+          options: [
+            "Karl Marx",
+            "Michel Foucault",
+            "Jean-Jacques Rousseau",
+            "Georg Hegel",
+          ],
+          correctIndex: 2,
+          explanation:
+            "Jean-Jacques Rousseau is famous for his articulation of the social contract theory, though Thomas Hobbes and John Locke also made significant contributions to this concept.",
+        },
+        {
+          question: "What is epistemology?",
+          options: [
+            "The study of beauty",
+            "The study of knowledge",
+            "The study of being",
+            "The study of ethics",
+          ],
+          correctIndex: 1,
+          explanation:
+            "Epistemology is the branch of philosophy concerned with the theory of knowledge, especially its methods, validity, and scope, and the distinction between justified belief and opinion.",
+        },
+      ];
+
+      // Initialize variables
+      let currentQuestionIndex = 0;
+      let streak = 0;
+      let currentQuestion = null;
+      let usedQuestionIndices = new Set();
+
+      // DOM elements
+      const questionElement = document.getElementById("question");
+      const optionsElement = document.getElementById("options");
+      const feedbackElement = document.getElementById("feedback");
+      const explanationElement = document.getElementById("explanation");
+      const nextButton = document.getElementById("next-btn");
+      const streakCounter = document.getElementById("streak-counter");
+
+      // Set up the streak counter
+      streakCounter.textContent = streak;
+
+      // Get a random question that hasn't been used recently
+      function getRandomQuestion() {
+        // If we've used all questions, reset the used set
+        if (usedQuestionIndices.size >= questions.length) {
+          usedQuestionIndices.clear();
+        }
+
+        let randomIndex;
+        do {
+          randomIndex = Math.floor(Math.random() * questions.length);
+        } while (usedQuestionIndices.has(randomIndex));
+
+        usedQuestionIndices.add(randomIndex);
+        return questions[randomIndex];
+      }
+
+      // Display a question
+      function displayQuestion() {
+        // Get a new random question
+        currentQuestion = getRandomQuestion();
+
+        // Clear previous content
+        questionElement.textContent = currentQuestion.question;
+        optionsElement.innerHTML = "";
+        feedbackElement.style.display = "none";
+        explanationElement.style.display = "none";
+        nextButton.disabled = true;
+
+        // Display options
+        currentQuestion.options.forEach((option, optionIndex) => {
+          const optionDiv = document.createElement("div");
+          optionDiv.className = "option";
+          optionDiv.textContent = option;
+          optionDiv.addEventListener("click", () => selectOption(optionIndex));
+          optionsElement.appendChild(optionDiv);
+        });
+      }
+
+      // Select an option
+      function selectOption(optionIndex) {
+        // Disable all options to prevent multiple selections
+        const options = document.querySelectorAll(".option");
+        options.forEach((option) => {
+          option.style.pointerEvents = "none";
+        });
+
+        // Mark selected option
+        options[optionIndex].classList.add("selected");
+
+        // Show feedback
+        showFeedback(optionIndex);
+
+        // Enable next button
+        nextButton.disabled = false;
+      }
+
+      // Show feedback after answering
+      function showFeedback(selectedIndex) {
+        const correctIndex = currentQuestion.correctIndex;
+        const isCorrect = selectedIndex === correctIndex;
+        const options = document.querySelectorAll(".option");
+
+        // Update streak
+        if (isCorrect) {
+          streak++;
+        } else {
+          streak = 0;
+        }
+        streakCounter.textContent = streak;
+
+        feedbackElement.textContent = isCorrect
+          ? "Correct!"
+          : `Incorrect. The correct answer is: ${currentQuestion.options[correctIndex]}`;
+
+        feedbackElement.className = isCorrect
+          ? "feedback correct"
+          : "feedback incorrect";
+        feedbackElement.style.display = "block";
+
+        explanationElement.textContent = currentQuestion.explanation;
+        explanationElement.style.display = "block";
+
+        // Highlight the correct answer if the user selected incorrectly
+        if (!isCorrect) {
+          options[correctIndex].style.backgroundColor = "#a8f0c6";
+          options[correctIndex].style.borderColor = "#28a745";
+        }
+      }
+
+      // Navigation event listeners
+      nextButton.addEventListener("click", () => {
+        displayQuestion();
+      });
+
+      // Initialize quiz
+      displayQuestion();
+    </script>
+  </body>
+</html>
